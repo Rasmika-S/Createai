@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Creatai — Miniature 3D AI Workshop</title>
+  
+  <!-- Google Fonts: Space Grotesk & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN for modern responsive UI utility classes -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- A-Frame WebGL Framework CDN -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #0B0D12;
+      --violet-accent: #8B5CF6;
+      --cyan-accent: #22D3EE;
+      --soft-white: #F5F7FA;
+      --secondary-grey: #9CA3AF;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .font-heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* Modern Dark Glassmorphism Styling */
+    .glass-panel {
+      background: rgba(11, 13, 18, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(34, 211, 238, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(18, 22, 32, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(34, 211, 238, 0.6);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px -5px rgba(34, 211, 238, 0.3);
+    }
+
+    .glow-violet-text {
+      text-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
+    }
+
+    .glow-cyan-text {
+      text-shadow: 0 0 12px rgba(34, 211, 238, 0.6);
+    }
+
+    /* Gradient Brand Text */
+    .brand-gradient {
+  background: linear-gradient(135deg, #22D3EE 0%, #885CF6 50%, #F5F7FA 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+    /* Custom Scrollbars & Transitions */
+    .fade-overlay {
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+    }
+
+    /* Pulsing animations for AI Core status */
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.4; filter: drop-shadow(0 0 5px #8B5CF6); }
+      50% { opacity: 0.9; filter: drop-shadow(0 0 15px #22D3EE); }
+    }
+
+    .animate-pulse-glow {
+      animation: pulse-glow 2.5s infinite ease-in-out;
+    }
+
+    @keyframes scanner-line {
+      0% { top: 0%; opacity: 0.8; }
+      50% { top: 90%; opacity: 1; }
+      100% { top: 0%; opacity: 0.8; }
+    }
+
+    .animate-scan {
+      animation: scanner-line 2s infinite ease-in-out;
+    }
+
+    /* Hide standard A-Frame VR buttons for clean app aesthetic */
+    .a-enter-vr {
+      display: none !important;
+    }
+  </style>
+</head>
+<body class="bg-[#0B0D12] text-[#F5F7FA] overflow-hidden select-none">
+
+  <!-- 1. INTRO LANDING SCREEN OVERLAY -->
+  <div id="intro-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0B0D12]/95 backdrop-blur-md fade-overlay">
+    <div class="glass-panel max-w-lg w-full p-8 md:p-10 rounded-2xl text-center relative overflow-hidden">
+      <!-- Decorative background blur orb -->
+      <div class="absolute -top-24 -left-24 w-48 h-48 bg-[#8B5CF6]/30 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-[#22D3EE]/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="inline-block px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-[#22D3EE] uppercase bg-[#22D3EE]/10 rounded-full border border-[#22D3EE]/30">
+        AI Miniature Workshop
+      </div>
+      
+      <h1 class="text-4xl md:text-5xl font-bold font-heading brand-gradient mb-3 tracking-tight">
+        CREATAI
+      </h1>
+      
+      <p class="text-[#9CA3AF] text-sm md:text-base mb-8 leading-relaxed">
+        Where abstract human ideas physically materialize. Watch an autonomous AI robotic worker gather, assemble, test, and bring creations to life.
+      </p>
+
+      <div class="flex flex-col gap-3">
+        <button id="btn-enter-workshop" onclick="app.enterWorkshop()" class="w-full py-3.5 px-6 rounded-xl font-medium text-white bg-gradient-to-r from-[#8B5CF6] to-[#22D3EE] hover:opacity-95 transition shadow-lg shadow-[#8B5CF6]/25 flex items-center justify-center gap-2 group">
+          <span>ENTER WORKSHOP</span>
+          <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-[#FFFFFF] stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="mt-6 text-xs text-[#9CA3AF]">
+        3D Real-time Render · Interactive Procedural World
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MAIN APPLICATION OVERLAY UI -->
+  <div id="app-ui" class="fixed inset-0 pointer-events-none z-20 flex flex-col justify-between p-4 md:p-6 opacity-0 transition-opacity duration-700">
+    
+    <!-- TOP BAR -->
+    <div class="flex justify-between items-start w-full">
+      <!-- Top-Left Branding -->
+      <div class="pointer-events-auto glass-panel px-4 py-2.5 rounded-xl flex items-center gap-3">
+        <div class="w-3 h-3 rounded-full bg-[#22D3EE] animate-pulse"></div>
+        <div>
+          <div class="font-heading font-bold text-sm tracking-wide text-white">CREATAI</div>
+          <div class="text-[10px] text-[#9CA3AF]">From imagination to creation.</div>
+        </div>
+      </div>
+
+      <!-- Top-Right Actions -->
+      <div class="pointer-events-auto flex gap-2">
+        <button onclick="app.resetWorkshop()" class="glass-panel hover:bg-[#8B5CF6]/20 text-[#F5F7FA] text-xs font-medium px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 border border-[#8B5CF6]/40">
+          <svg class="w-3.5 h-3.5 text-[#22D3EE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          RESET WORKSHOP
+        </button>
+      </div>
+    </div>
+
+    <!-- CENTER CREATION SELECTION MODAL (Shown when prompt is active) -->
+    <div id="selection-panel" class="pointer-events-auto self-center max-w-md w-full glass-panel p-6 rounded-2xl border border-[#8B5CF6]/30 text-center transition-all duration-500 my-auto">
+      <div class="text-xs font-semibold text-[#22D3EE] tracking-wider uppercase mb-1">Interactive Prompt</div>
+      <h2 class="text-xl font-bold font-heading text-white mb-4">WHAT SHOULD WE CREATE?</h2>
+      
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <!-- Choice 1: Robot -->
+        <button onclick="app.selectOption('ROBOT')" class="glass-card p-3.5 rounded-xl text-left group">
+          <div class="text-2xl mb-1">🤖</div>
+          <div class="text-sm font-semibold text-white group-hover:text-[#22D3EE] transition">ROBOT</div>
+          <div class="text-[11px] text-[#9CA3AF]">Small assistant bot</div>
+        </button>
+
+        <!-- Choice 2: Rocket -->
+        <button onclick="app.selectOption('ROCKET')" class="glass-card p-3.5 rounded-xl text-left group">
+          <div class="text-2xl mb-1">🚀</div>
+          <div class="text-sm font-semibold text-white group-hover:text-[#22D3EE] transition">ROCKET</div>
+          <div class="text-[11px] text-[#9CA3AF]">Futuristic explorer</div>
+        </button>
+
+        <!-- Choice 3: House -->
+        <button onclick="app.selectOption('HOUSE')" class="glass-card p-3.5 rounded-xl text-left group">
+          <div class="text-2xl mb-1">🏠</div>
+          <div class="text-sm font-semibold text-white group-hover:text-[#22D3EE] transition">HOUSE</div>
+          <div class="text-[11px] text-[#9CA3AF]">Smart eco-living pod</div>
+        </button>
+
+        <!-- Choice 4: Surprise Me -->
+        <button onclick="app.selectOption('SURPRISE')" class="glass-card p-3.5 rounded-xl text-left group border-[#8B5CF6]/50">
+          <div class="text-2xl mb-1">✨</div>
+          <div class="text-sm font-semibold text-[#22D3EE] group-hover:text-[#8B5CF6] transition">SURPRISE ME</div>
+          <div class="text-[11px] text-[#9CA3AF]">Randomized creation</div>
+        </button>
+      </div>
+
+      <div class="text-[11px] text-[#9CA3AF]">
+        Select an idea to trigger the robotic construction workflow.
+      </div>
+    </div>
+
+    <!-- BOTTOM HUD STATUS PANEL -->
+    <div class="w-full flex justify-between items-end gap-4">
+      <!-- Status Box -->
+      <div id="workflow-hud" class="pointer-events-auto glass-panel px-5 py-3.5 rounded-xl max-w-md w-full border border-[#22D3EE]/30 flex flex-col gap-1 transition-all">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-bold text-[#8B5CF6] tracking-wider flex items-center gap-1.5">
+            <span id="hud-dot" class="w-2 h-2 rounded-full bg-[#22D3EE] animate-ping"></span>
+            <span id="hud-title">CREATAI CORE</span>
+          </span>
+          <span id="hud-step-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-[#22D3EE]/20 text-[#22D3EE] font-mono">STANDBY</span>
+        </div>
+        <div id="hud-status-text" class="text-sm font-medium text-white font-mono min-h-[20px]">
+          Awaiting input. Choose a creation above...
+        </div>
+        <!-- Progress bar -->
+        <div class="w-full bg-[#0B0D12]/60 h-1 rounded-full overflow-hidden mt-1">
+          <div id="hud-progress" class="bg-gradient-to-r from-[#8B5CF6] to-[#22D3EE] h-full w-0 transition-all duration-500"></div>
+        </div>
+      </div>
+
+      <!-- Bottom-Right Instructions -->
+      <div class="pointer-events-auto hidden md:block glass-panel px-3.5 py-2 rounded-xl text-right text-[11px] text-[#9CA3AF] border border-[#8B5CF6]/20">
+        <div><span class="text-[#22D3EE]">Drag</span> to rotate scene</div>
+        <div><span class="text-[#22D3EE]">Scroll</span> to zoom perspective</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. A-FRAME 3D SCENE -->
+  <a-scene 0 
+    embedded 
+    class="w-full h-full absolute inset-0 z-10"
+    renderer="antialias: true; colorManagement: true; exposure: 1.1; shadowMapEnabled: true"
+    vr-mode-ui="enabled: false">
+    
+    <!-- ASSET MANAGEMENT (Generated Textures & Color Palette Materials) -->
+    <a-assets>
+      <a-mixin id="glowing-cyan" material="color: #22D3EE; emissive: #22D3EE; emissiveIntensity: 0.6; roughness: 0.2"></a-mixin>
+      <a-mixin id="glowing-violet" material="color: #8B5CF6; emissive: #8B5CF6; emissiveIntensity: 0.6; roughness: 0.2"></a-mixin>
+      <a-mixin id="dark-metal" material="color: #121620; metalness: 0.8; roughness: 0.3"></a-mixin>
+    </a-assets>
+
+    <!-- LIGHTING SYSTEM -->
+    <a-entity id="ambient-light" light="type: ambient; color: #1E293B; intensity: 1.5"></a-entity>
+    <a-entity id="dir-light" light="type: directional; color: #F5F7FA; intensity: 1.2; castShadow: true" position="-5 10 5"></a-entity>
+    <a-entity id="violet-point-light" light="type: point; color: #8B5CF6; intensity: 2.5; distance: 10" position="0 2.5 -1.5"></a-entity>
+    <a-entity id="cyan-point-light" light="type: point; color: #22D3EE; intensity: 2.0; distance: 8" position="2 1.5 0"></a-entity>
+    
+    <!-- CAMERA CONTAINER WITH ORBIT CAPABILITY -->
+    <a-entity id="camera-rig" position="0 1.5 0" rotation="-22 35 0">
+      <a-entity id="main-camera" camera position="0 0 9.5" look-controls="enabled: false"></a-entity>
+    </a-entity>
+
+    <!-- ENVIRONMENT FLOOR & GRID -->
+    <a-entity id="environment-group">
+      <!-- Dark Floor Base -->
+      <a-plane position="0 -0.05 0" rotation="-90 0 0" width="16" height="16" color="#0B0D12" material="roughness: 0.8; metalness: 0.2"></a-plane>
+      
+      <!-- Inner Glowing Circular Floor Grid Pad -->
+      <a-ring position="0 0 0" rotation="-90 0 0" radius-inner="0.1" radius-outer="7" color="#121620" material="roughness: 0.9"></a-ring>
+      <a-ring position="0 0.01 0" rotation="-90 0 0" radius-inner="6.8" radius-outer="7.0" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.5"></a-ring>
+      <a-ring position="0 0.01 0" rotation="-90 0 0" radius-inner="4.8" radius-outer="4.9" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.4"></a-ring>
+
+      <!-- Grid Floor Accent Lines -->
+      <a-box position="0 0.005 0" width="14" height="0.002" depth="0.04" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.3"></a-box>
+      <a-box position="0 0.005 0" width="0.04" height="0.002" depth="14" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.3"></a-box>
+    </a-entity>
+
+    <!-- 1. CENTRAL AI CORE -->
+    <a-entity id="ai-core-group" position="0 2.2 -1.5">
+      <!-- Main Orb -->
+      <a-sphere id="ai-core-orb" radius="0.55" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.8; roughness: 0.1"></a-sphere>
+      <!-- Outer Pulsing Sphere Halo -->
+      <a-sphere radius="0.7" color="#22D3EE" material="transparent: true; opacity: 0.25; emissive: #22D3EE; emissiveIntensity: 0.5"></a-sphere>
+
+      <!-- Nested Rotating Metallic Cyan/Violet Rings -->
+      <a-torus id="core-ring-1" radius="0.9" radius-tubular="0.015" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.6"></a-torus>
+      <a-torus id="core-ring-2" radius="1.1" radius-tubular="0.015" color="#8B5CF6" rotation="45 45 0" material="emissive: #8B5CF6; emissiveIntensity: 0.6"></a-torus>
+      
+      <!-- Core Pillar Stand -->
+      <a-cylinder position="0 -1.5 0" radius="0.2" height="1.4" color="#121620" material="metalness: 0.8"></a-cylinder>
+      <a-cone position="0 -0.8 0" radius-bottom="0.4" radius-top="0.1" height="0.4" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.4"></a-cone>
+    </a-entity>
+
+    <!-- 2. COMPONENT SHELVES STATION (Left) -->
+    <a-entity id="station-shelves" position="-3.5 0 -1">
+      <!-- Shelf Frame Base -->
+      <a-box position="0 0.05 0" width="1.4" height="0.1" depth="1.0" color="#121620" material="metalness: 0.8"></a-box>
+      <a-box position="-0.6 1 0" width="0.1" height="2" depth="0.8" color="#1E293B"></a-box>
+      <a-box position="0.6 1 0" width="0.1" height="2" depth="0.8" color="#1E293B"></a-box>
+
+      <!-- Shelves -->
+      <a-box position="0 0.6 0" width="1.3" height="0.04" depth="0.8" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.3; transparent: true; opacity: 0.7"></a-box>
+      <a-box position="0 1.2 0" width="1.3" height="0.04" depth="0.8" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.3; transparent: true; opacity: 0.7"></a-box>
+
+      <!-- Raw Material Resource Crates -->
+      <a-box class="shelf-crate" position="-0.3 0.75 -0.1" width="0.25" height="0.25" depth="0.25" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.5"></a-box>
+      <a-box class="shelf-crate" position="0.2 0.75 0.1" width="0.25" height="0.25" depth="0.25" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.5"></a-box>
+      <a-box class="shelf-crate" position="-0.2 1.35 0" width="0.25" height="0.25" depth="0.25" color="#F59E0B" material="emissive: #F59E0B; emissiveIntensity: 0.5"></a-box>
+      <a-box class="shelf-crate" position="0.3 1.35 -0.1" width="0.22" height="0.22" depth="0.22" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.5"></a-box>
+      
+      <!-- Label Hologram -->
+      <a-plane position="0 1.9 0.4" width="1.2" height="0.3" color="#0B0D12" material="transparent: true; opacity: 0.8; side: double">
+        <a-entity text="value: COMPONENT STORAGE; color: #22D3EE; align: center; width: 2.2"></a-entity>
+      </a-plane>
+    </a-entity>
+
+    <!-- 3. CONVEYOR BELT STATION (Middle Left to Right) -->
+    <a-entity id="station-conveyor" position="-1.2 0.25 0.3" rotation="0 15 0">
+      <!-- Main Belt Ramp -->
+      <a-box position="0 0 0" width="2.4" height="0.12" depth="0.6" color="#121620" material="metalness: 0.9; roughness: 0.2"></a-box>
+      <!-- Moving Cyan Lines / Track -->
+      <a-plane position="0 0.065 0" rotation="-90 0 0" width="2.3" height="0.5" color="#0B0D12"></a-plane>
+      <a-box id="conveyor-track-line" position="0 0.07 0" width="2.2" height="0.01" depth="0.08" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.6"></a-box>
+      
+      <!-- Support Legs -->
+      <a-cylinder position="-1 -0.15 0" radius="0.04" height="0.3" color="#1E293B"></a-cylinder>
+      <a-cylinder position="1 -0.15 0" radius="0.04" height="0.3" color="#1E293B"></a-cylinder>
+      
+      <!-- Conveyor Payload Tray (Moves during assembly) -->
+      <a-box id="conveyor-payload-tray" position="-1.0 0.12 0" width="0.35" height="0.05" depth="0.35" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.4"></a-box>
+    </a-entity>
+
+    <!-- 4. ASSEMBLY STATION (Center Right) -->
+    <a-entity id="station-assembly" position="1.8 0 0">
+      <!-- Hexagonal / Round Assembly Base -->
+      <a-cylinder position="0 0.1 0" radius="1.2" height="0.2" color="#121620" material="metalness: 0.8"></a-cylinder>
+      <a-ring position="0 0.205 0" rotation="-90 0 0" radius-inner="0.2" radius-outer="1.15" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.4"></a-ring>
+
+      <!-- Laser Emitter Arch -->
+      <a-torus position="0 1.1 0" radius="1.1" radius-tubular="0.03" arc="180" color="#1E293B" rotation="0 0 0"></a-torus>
+      <!-- Robotic Manipulator Arms -->
+      <a-entity id="arm-1" position="-0.9 0.2 -0.5" rotation="0 45 0">
+        <a-box position="0 0.3 0" width="0.08" height="0.6" depth="0.08" color="#22D3EE"></a-box>
+        <a-sphere position="0 0.6 0" radius="0.08" color="#8B5CF6"></a-sphere>
+        <a-box id="arm-1-claw" position="0.15 0.6 0" width="0.3" height="0.04" depth="0.04" color="#22D3EE"></a-box>
+      </a-entity>
+      <a-entity id="arm-2" position="0.9 0.2 0.5" rotation="0 -135 0">
+        <a-box position="0 0.3 0" width="0.08" height="0.6" depth="0.08" color="#22D3EE"></a-box>
+        <a-sphere position="0 0.6 0" radius="0.08" color="#8B5CF6"></a-sphere>
+        <a-box id="arm-2-claw" position="0.15 0.6 0" width="0.3" height="0.04" depth="0.04" color="#22D3EE"></a-box>
+      </a-entity>
+
+      <!-- Holographic Blueprint Shield (Active during build) -->
+      <a-cylinder id="assembly-blueprint-holo" position="0 0.9 0" radius="0.8" height="1.4" color="#22D3EE" material="transparent: true; opacity: 0.0; side: double; wireframe: true"></a-cylinder>
+      
+      <!-- Welding Laser Spark Point Light -->
+      <a-entity id="assembly-laser-light" light="type: point; color: #22D3EE; intensity: 0; distance: 4" position="0 0.8 0"></a-entity>
+
+      <!-- Label -->
+      <a-plane position="0 1.9 0" width="1.2" height="0.25" color="#0B0D12" material="transparent: true; opacity: 0.8; side: double">
+        <a-entity text="value: FABRICATION MATRIX; color: #8B5CF6; align: center; width: 2.2"></a-entity>
+      </a-plane>
+    </a-entity>
+
+    <!-- 5. TESTING CHAMBER STATION (Far Right) -->
+    <a-entity id="station-testing" position="3.6 0 -1.2">
+      <!-- Base & Top Cap -->
+      <a-cylinder position="0 0.1 0" radius="0.8" height="0.2" color="#121620" material="metalness: 0.8"></a-cylinder>
+      <a-cylinder position="0 2.1 0" radius="0.8" height="0.15" color="#121620" material="metalness: 0.8"></a-cylinder>
+
+      <!-- Transparent Containment Glass Cylinder -->
+      <a-cylinder position="0 1.1 0" radius="0.75" height="1.9" color="#22D3EE" material="transparent: true; opacity: 0.15; side: double; roughness: 0.1"></a-cylinder>
+      
+      <!-- Moving Vertical Scanner Beam Ring -->
+      <a-ring id="testing-scanner-beam" position="0 0.3 0" rotation="-90 0 0" radius-inner="0.1" radius-outer="0.7" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.9; transparent: true; opacity: 0.0"></a-ring>
+      
+      <!-- Scanner Spotlight -->
+      <a-entity id="scanner-light" light="type: point; color: #22D3EE; intensity: 0; distance: 3" position="0 1.1 0"></a-entity>
+
+      <!-- Status Indicator Screen on Top -->
+      <a-box position="0 2.2 0.7" width="0.5" height="0.3" depth="0.05" color="#0B0D12">
+        <a-entity id="testing-screen-text" text="value: READY; color: #22D3EE; align: center; width: 1.8" position="0 0 0.03"></a-entity>
+      </a-box>
+    </a-entity>
+
+    <!-- 6. FINISHED CREATION DISPLAY PODIUM (Front Center) -->
+    <a-entity id="station-podium" position="0 0 2.4">
+      <!-- Elevated Hexagonal Podium -->
+      <a-cylinder position="0 0.15 0" radius="1.1" height="0.3" segments-radial="6" color="#121620" material="metalness: 0.9; roughness: 0.2"></a-cylinder>
+      <a-cylinder position="0 0.31 0" radius="0.95" height="0.02" segments-radial="6" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.5"></a-cylinder>
+      
+      <!-- Dedicated Podium Overhead Spotlight -->
+      <a-entity id="podium-spotlight" light="type: spot; color: #22D3EE; intensity: 0; angle: 35; penumbra: 0.4" position="0 4 0" rotation="-90 0 0"></a-entity>
+
+      <!-- Holographic Display Ring Base -->
+      <a-ring position="0 0.32 0" rotation="-90 0 0" radius-inner="0.4" radius-outer="0.8" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.4"></a-ring>
+    </a-entity>
+
+    <!-- 7. CREATAI ROBOT WORKER ("Creatai Bot") -->
+    <a-entity id="creatai-bot" position="0 1.1 0" rotation="0 0 0">
+      <!-- Hover Thruster Cone & Glow -->
+      <a-cone position="0 -0.45 0" radius-bottom="0.25" radius-top="0.05" height="0.2" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.8; transparent: true; opacity: 0.8"></a-cone>
+      <a-sphere position="0 -0.55 0" radius="0.12" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.9"></a-sphere>
+
+      <!-- Torso Body -->
+      <a-cylinder position="0 0 0" radius="0.25" height="0.6" color="#1E293B" material="metalness: 0.8"></a-cylinder>
+      <a-box position="0 0.05 0.21" width="0.2" height="0.2" depth="0.05" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.6"></a-box>
+
+      <!-- Spherical Head -->
+      <a-entity id="bot-head" position="0 0.5 0">
+        <a-sphere radius="0.28" color="#121620" material="metalness: 0.7; roughness: 0.2"></a-sphere>
+        <!-- Visor Eyes -->
+        <a-box id="bot-eyes" position="0 0.02 0.22" width="0.32" height="0.1" depth="0.08" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.9"></a-box>
+        <!-- Head Antenna LED -->
+        <a-cylinder position="0 0.32 0" radius="0.015" height="0.15" color="#1E293B"></a-cylinder>
+        <a-sphere id="bot-antenna-led" position="0 0.4 0" radius="0.04" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.9"></a-sphere>
+      </a-entity>
+
+      <!-- Articulated Robot Arms -->
+      <a-entity id="bot-left-arm" position="-0.32 0.1 0">
+        <a-capsule radius="0.05" length="0.3" color="#1E293B" rotation="0 0 20"></a-capsule>
+        <a-sphere position="-0.1 -0.2 0" radius="0.06" color="#22D3EE"></a-sphere>
+      </a-entity>
+      
+      <a-entity id="bot-right-arm" position="0.32 0.1 0">
+        <a-capsule radius="0.05" length="0.3" color="#1E293B" rotation="0 0 -20"></a-capsule>
+        <a-sphere position="0.1 -0.2 0" radius="0.06" color="#22D3EE"></a-sphere>
+      </a-entity>
+
+      <!-- Slot for Carrying Materials -->
+      <a-entity id="bot-item-slot" position="0 -0.1 0.35" scale="0 0 0">
+        <!-- Spawned carried items go here -->
+      </a-entity>
+    </a-entity>
+
+    <!-- DYNAMIC CREATION HOLDER (Where assemblies are built & animated) -->
+    <a-entity id="active-creation-holder" position="0 0 0"></a-entity>
+
+    <!-- DECORATIVE AMBIENT DUST / STAR PARTICLES -->
+    <a-entity id="ambient-particles"></a-entity>
+
+  </a-scene>
+
+  <script>
+    /**
+     * Synthesizer Sound Engine (Zero external audio assets dependency)
+     */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      // Short UI click pop
+      playClick() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+      }
+
+      // Laser welding synth burst
+      playLaser() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+      }
+
+      // Glitch Creation Error Warning Tone
+      playErrorAlarm() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.3);
+      }
+
+      // Completion Major Arpeggio Sound
+      playSuccessChime() {
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          const startTime = this.ctx.currentTime + idx * 0.1;
+          gain.gain.setValueAtTime(0.15, startTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(startTime);
+          osc.stop(startTime + 0.4);
+        });
+      }
+    }
+
+    /**
+     * Main Creatai Application Controller
+     */
+    class CreataiApp {
+      constructor() {
+        this.sound = new SoundEngine();
+        this.selectedOption = null;
+        this.isProcessing = false;
+        this.bot = null;
+        this.cameraRig = null;
+        
+        // Orbit Camera State
+        this.cameraOrbit = { yaw: 35, pitch: -22, radius: 9.5 };
+        this.isDragging = false;
+        this.previousMouse = { x: 0, y: 0 };
+
+        // Bind lifecycle
+        window.addEventListener('load', () => this.init());
+      }
+
+      init() {
+        this.bot = document.getElementById('creatai-bot');
+        this.cameraRig = document.getElementById('camera-rig');
+
+        this.setupOrbitControls();
+        this.setupAmbientParticles();
+        this.startContinuousAnimations();
+      }
+
+      /**
+       * Smooth Orbit Camera Controls (Drag to rotate, Scroll to zoom)
+       */
+      setupOrbitControls() {
+        const scene = document.querySelector('a-scene');
+
+        window.addEventListener('mousedown', (e) => {
+          if (e.target.tagName === 'BUTTON' || e.target.closest('#selection-panel')) return;
+          this.isDragging = true;
+          this.previousMouse = { x: e.clientX, y: e.clientY };
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (!this.isDragging) return;
+          const deltaX = e.clientX - this.previousMouse.x;
+          const deltaY = e.clientY - this.previousMouse.y;
+
+          this.cameraOrbit.yaw += deltaX * 0.3;
+          // Pitch limits to prevent going under floor
+          this.cameraOrbit.pitch = Math.max(-75, Math.min(-5, this.cameraOrbit.pitch + deltaY * 0.3));
+
+          this.updateCameraTransform();
+          this.previousMouse = { x: e.clientX, y: e.clientY };
+        });
+
+        window.addEventListener('mouseup', () => { this.isDragging = false; });
+
+        // Touch support
+        window.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 1) {
+            this.isDragging = true;
+            this.previousMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
+        });
+
+        window.addEventListener('touchmove', (e) => {
+          if (!this.isDragging || e.touches.length !== 1) return;
+          const deltaX = e.touches[0].clientX - this.previousMouse.x;
+          const deltaY = e.touches[0].clientY - this.previousMouse.y;
+
+          this.cameraOrbit.yaw += deltaX * 0.4;
+          this.cameraOrbit.pitch = Math.max(-75, Math.min(-5, this.cameraOrbit.pitch + deltaY * 0.4));
+
+          this.updateCameraTransform();
+          this.previousMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        });
+
+        window.addEventListener('touchend', () => { this.isDragging = false; });
+
+        // Scroll Zoom
+        window.addEventListener('wheel', (e) => {
+          this.cameraOrbit.radius = Math.max(5, Math.min(15, this.cameraOrbit.radius + e.deltaY * 0.008));
+          const mainCam = document.getElementById('main-camera');
+          mainCam.setAttribute('position', `0 0 ${this.cameraOrbit.radius}`);
+        });
+      }
+
+      updateCameraTransform() {
+        this.cameraRig.setAttribute('rotation', `${this.cameraOrbit.pitch} ${this.cameraOrbit.yaw} 0`);
+      }
+
+      /**
+       * Procedural Ambient Dust Particles Generation
+       */
+      setupAmbientParticles() {
+        const container = document.getElementById('ambient-particles');
+        for (let i = 0; i < 35; i++) {
+          const p = document.createElement('a-sphere');
+          const x = (Math.random() - 0.5) * 14;
+          const y = Math.random() * 5 + 0.5;
+          const z = (Math.random() - 0.5) * 14;
+          const radius = Math.random() * 0.025 + 0.01;
+          const color = Math.random() > 0.5 ? '#22D3EE' : '#8B5CF6';
+
+          p.setAttribute('position', `${x} ${y} ${z}`);
+          p.setAttribute('radius', radius);
+          p.setAttribute('color', color);
+          p.setAttribute('material', `emissive: ${color}; emissiveIntensity: 0.8; transparent: true; opacity: 0.6`);
+          container.appendChild(p);
+        }
+      }
+
+      /**
+       * Background Animations (AI Core rings, robot hover idle)
+       */
+      startContinuousAnimations() {
+        const ring1 = document.getElementById('core-ring-1');
+        const ring2 = document.getElementById('core-ring-2');
+        const conveyorLine = document.getElementById('conveyor-track-line');
+        const botHead = document.getElementById('bot-head');
+
+        let tick = 0;
+        const loop = () => {
+          tick += 0.02;
+
+          // AI Core Rings Rotation
+          if (ring1) ring1.setAttribute('rotation', `0 ${tick * 40} 0`);
+          if (ring2) ring2.setAttribute('rotation', `${tick * 30} ${tick * 50} ${tick * 20}`);
+
+          // Conveyor Belt Line Motion
+          if (conveyorLine) {
+            const posZ = (Math.sin(tick * 3) * 0.2);
+            conveyorLine.setAttribute('position', `0 0.07 ${posZ}`);
+          }
+
+          // Bot Hovering Idle Motion (When not moving dynamically)
+          if (this.bot && !this.isProcessing) {
+            const hoverY = 1.1 + Math.sin(tick * 2.5) * 0.06;
+            const currentPos = this.bot.getAttribute('position');
+            this.bot.setAttribute('position', `${currentPos.x} ${hoverY} ${currentPos.z}`);
+            
+            // Subtle head tilt
+            if (botHead) botHead.setAttribute('rotation', `0 ${Math.sin(tick * 1.5) * 10} 0`);
+          }
+
+          requestAnimationFrame(loop);
+        };
+        loop();
+      }
+
+      /**
+       * Enter Workshop Transition
+       */
+      enterWorkshop() {
+        this.sound.init();
+        this.sound.playClick();
+
+        const intro = document.getElementById('intro-screen');
+        const ui = document.getElementById('app-ui');
+
+        intro.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          intro.style.display = 'none';
+          ui.classList.remove('opacity-0');
+        }, 600);
+      }
+
+      /**
+       * Reset Workshop State
+       */
+      resetWorkshop() {
+        this.sound.playClick();
+        if (this.isProcessing) return;
+
+        // Clear active creations
+        const holder = document.getElementById('active-creation-holder');
+        holder.innerHTML = '';
+
+        // Reset Bot Position
+        this.moveEntityTo(this.bot, { x: 0, y: 1.1, z: 0 }, { x: 0, y: 0, z: 0 }, 1000);
+
+        // Reset UI
+        document.getElementById('selection-panel').classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+        this.updateHUD('CREATAI CORE', 'STANDBY', 'Awaiting input. Choose a creation above...', 0);
+        
+        // Turn off spotlights
+        document.getElementById('podium-spotlight').setAttribute('light', 'intensity: 0');
+      }
+
+      /**
+       * User Selects a Creation Option
+       */
+      selectOption(option) {
+        if (this.isProcessing) return;
+        this.sound.playClick();
+
+        if (option === 'SURPRISE') {
+          const options = ['ROBOT', 'ROCKET', 'HOUSE'];
+          option = options[Math.floor(Math.random() * options.length)];
+        }
+
+        this.selectedOption = option;
+        this.isProcessing = true;
+
+        // Hide selection modal
+        const panel = document.getElementById('selection-panel');
+        panel.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+
+        // Start Creation Workflow Sequence
+        this.runWorkflowSequence();
+      }
+
+      /**
+       * Main Creation Workflow State Machine
+       * IDEA -> THINK -> PLAN -> BUILD -> TEST -> CREATE
+       */
+      async runWorkflowSequence() {
+        // Stage 1: THINK & PLAN
+        this.updateHUD('THINK & PLAN', 'STAGE 1/5', `Understanding ${this.selectedOption} request... Generating schematics.`, 15);
+        this.sound.playClick();
+        
+        // Activate Blueprint Holo
+        const holo = document.getElementById('assembly-blueprint-holo');
+        holo.setAttribute('material', 'opacity: 0.4');
+        await this.delay(1800);
+
+        // Stage 2: GATHER COMPONENTS
+        this.updateHUD('GATHERING', 'STAGE 2/5', 'Robot worker fetching raw mineral components...', 35);
+        
+        // Move Bot to Shelves
+        await this.moveEntityToAsync(this.bot, { x: -2.7, y: 1.1, z: -0.8 }, { x: 0, y: 45, z: 0 }, 1400);
+        
+        // Spawn material block in bot slot
+        const itemSlot = document.getElementById('bot-item-slot');
+        itemSlot.innerHTML = `<a-box width="0.3" height="0.3" depth="0.3" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.6"></a-box>`;
+        itemSlot.setAttribute('scale', '1 1 1');
+        await this.delay(500);
+
+        // Carry components to Conveyor
+        await this.moveEntityToAsync(this.bot, { x: -1.2, y: 1.1, z: 0.3 }, { x: 0, y: 90, z: 0 }, 1200);
+        itemSlot.setAttribute('scale', '0 0 0'); // Put down
+
+        // Stage 3: FABRICATION & ASSEMBLY
+        this.updateHUD('BUILDING', 'STAGE 3/5', 'Welding structural chassis at Fabrication Matrix...', 55);
+        
+        // Bot moves to assembly station
+        await this.moveEntityToAsync(this.bot, { x: 1.2, y: 1.1, z: 0.8 }, { x: 0, y: -45, z: 0 }, 1200);
+
+        // Laser Welding effect
+        const laserLight = document.getElementById('assembly-laser-light');
+        laserLight.setAttribute('light', 'intensity: 3');
+        this.sound.playLaser();
+
+        // Spawn partial assembly
+        const holder = document.getElementById('active-creation-holder');
+        holder.setAttribute('position', '1.8 0.4 0');
+        this.buildPartialCreation(holder, this.selectedOption);
+
+        await this.delay(1500);
+        laserLight.setAttribute('light', 'intensity: 0');
+
+        // STAGE 3.5: UNIQUE AI ERROR TRIGGER!
+        await this.triggerAiErrorSequence(holder);
+
+        // Complete creation build
+        this.buildFullCreation(holder, this.selectedOption);
+        holo.setAttribute('material', 'opacity: 0');
+
+        // Stage 4: DIAGNOSTICS & TESTING
+        this.updateHUD('DIAGNOSTICS', 'STAGE 4/5', 'Scanning material integrity in containment unit...', 80);
+
+        // Move Creation to Testing Chamber
+        await this.moveEntityToAsync(holder, { x: 3.6, y: 0.4, z: -1.2 }, { x: 0, y: 0, z: 0 }, 1500);
+        
+        // Move Bot to observe testing
+        this.moveEntityTo(this.bot, { x: 2.7, y: 1.1, z: -0.8 }, { x: 0, y: 45, z: 0 }, 1200);
+
+        // Activate Laser Scanner Sweep
+        const scannerBeam = document.getElementById('testing-scanner-beam');
+        const scannerLight = document.getElementById('scanner-light');
+        scannerBeam.setAttribute('material', 'opacity: 0.8');
+        scannerLight.setAttribute('light', 'intensity: 2');
+
+        // Animate scanner moving up and down
+        this.animateScannerBeam();
+        await this.delay(2200);
+
+        scannerBeam.setAttribute('material', 'opacity: 0');
+        scannerLight.setAttribute('light', 'intensity: 0');
+
+        // Stage 5: BRINGING CREATION TO LIFE!
+        this.updateHUD('COMPLETE', 'STAGE 5/5', 'Creation verified! Transferring to primary display pod...', 100);
+
+        // Move creation to Display Podium
+        await this.moveEntityToAsync(holder, { x: 0, y: 0.4, z: 2.4 }, { x: 0, y: 0, z: 0 }, 1600);
+        
+        // Bot moves next to podium
+        await this.moveEntityToAsync(this.bot, { x: 1.2, y: 1.1, z: 2.2 }, { x: 0, y: -60, z: 0 }, 1200);
+
+        // Podium Spotlight Hit & Celebration Sound
+        document.getElementById('podium-spotlight').setAttribute('light', 'intensity: 4');
+        this.sound.playSuccessChime();
+
+        // Trigger Signature Activation Animation
+        this.activateCreationAnimation(holder, this.selectedOption);
+
+        // Final UI Status
+        this.updateHUD('CREATAI CORE', 'READY', `Successfully created ${this.selectedOption}! Idea brought to life.`, 100);
+        this.isProcessing = false;
+      }
+
+      /**
+       * AI Error Unexpected Event Logic
+       */
+      async triggerAiErrorSequence(creationHolder) {
+        // Trigger Error Warning
+        this.sound.playErrorAlarm();
+        this.updateHUD('⚠ CREATION ERROR', 'GLITCH DETECTED', 'Unexpected component anomaly detected in matrix!', 60);
+        
+        // Flash UI HUD red/purple
+        const hud = document.getElementById('workflow-hud');
+        hud.classList.add('border-red-500', 'bg-red-950/40');
+
+        // Spawn a weird misaligned magenta glitch block on assembly
+        const glitchBlock = document.createElement('a-box');
+        glitchBlock.setAttribute('id', 'glitch-item');
+        glitchBlock.setAttribute('position', '0.2 0.6 0.2');
+        glitchBlock.setAttribute('rotation', '15 45 30');
+        glitchBlock.setAttribute('width', '0.35');
+        glitchBlock.setAttribute('height', '0.35');
+        glitchBlock.setAttribute('depth', '0.35');
+        glitchBlock.setAttribute('color', '#EC4899');
+        glitchBlock.setAttribute('material', 'emissive: #EC4899; emissiveIntensity: 0.9');
+        creationHolder.appendChild(glitchBlock);
+
+        // Bot head tilt in confusion
+        const botHead = document.getElementById('bot-head');
+        botHead.setAttribute('rotation', '0 0 -30');
+        await this.delay(1200);
+
+        // Re-thinking text
+        this.updateHUD('AI RE-THINKING', 'RESOLVING', 'Re-evaluating blueprint... Removing incorrect component.', 65);
+        botHead.setAttribute('rotation', '0 0 30');
+        await this.delay(1000);
+
+        // Disintegrate glitch block with laser burst
+        this.sound.playLaser();
+        if (glitchBlock.parentNode) glitchBlock.parentNode.removeChild(glitchBlock);
+        botHead.setAttribute('rotation', '0 0 0');
+
+        // Reset HUD style
+        hud.classList.remove('border-red-500', 'bg-red-950/40');
+        this.updateHUD('BUILDING', 'STAGE 3/5', 'Problem solved! Resuming perfect assembly.', 70);
+        await this.delay(1000);
+      }
+
+      /**
+       * Procedural Creation Builders (Built entirely with standard primitives)
+       */
+      buildPartialCreation(container, type) {
+        container.innerHTML = ''; // Reset
+        if (type === 'ROBOT') {
+          container.innerHTML = `<a-box position="0 0.25 0" width="0.5" height="0.5" depth="0.4" color="#121620" material="metalness: 0.8"></a-box>`;
+        } else if (type === 'ROCKET') {
+          container.innerHTML = `<a-cylinder position="0 0.5 0" radius="0.3" height="1.0" color="#121620" material="metalness: 0.8"></a-cylinder>`;
+        } else if (type === 'HOUSE') {
+          container.innerHTML = `<a-box position="0 0.25 0" width="0.9" height="0.5" depth="0.8" color="#121620"></a-box>`;
+        }
+      }
+
+      buildFullCreation(container, type) {
+        container.innerHTML = ''; // Reset
+        if (type === 'ROBOT') {
+          container.innerHTML = `
+            <!-- Mini Assistant Robot Creation -->
+            <a-entity id="final-creation-entity">
+              <a-box position="0 0.25 0" width="0.5" height="0.5" depth="0.4" color="#1E293B" material="metalness: 0.8"></a-box>
+              <a-sphere id="creation-bot-head" position="0 0.65 0" radius="0.22" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.5"></a-sphere>
+              <a-box position="0 0.65 0.18" width="0.25" height="0.08" depth="0.05" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.8"></a-box>
+              <a-cylinder id="creation-bot-arm-l" position="-0.3 0.25 0" radius="0.04" height="0.35" color="#8B5CF6"></a-cylinder>
+              <a-cylinder id="creation-bot-arm-r" position="0.3 0.25 0" radius="0.04" height="0.35" color="#8B5CF6"></a-cylinder>
+              <a-cylinder position="-0.15 -0.05 0" radius="0.06" height="0.2" color="#1E293B"></a-cylinder>
+              <a-cylinder position="0.15 -0.05 0" radius="0.06" height="0.2" color="#1E293B"></a-cylinder>
+            </a-entity>
+          `;
+        } else if (type === 'ROCKET') {
+          container.innerHTML = `
+            <!-- Futuristic Rocket Creation -->
+            <a-entity id="final-creation-entity">
+              <a-cylinder position="0 0.6 0" radius="0.3" height="1.1" color="#F5F7FA" material="metalness: 0.5"></a-cylinder>
+              <a-cone position="0 1.35 0" radius-bottom="0.3" height="0.4" color="#8B5CF6" material="emissive: #8B5CF6; emissiveIntensity: 0.5"></a-cone>
+              <a-cone position="-0.35 0.2 0" radius-bottom="0.12" height="0.5" color="#22D3EE" rotation="0 0 -20"></a-cone>
+              <a-cone position="0.35 0.2 0" radius-bottom="0.12" height="0.5" color="#22D3EE" rotation="0 0 20"></a-cone>
+              <a-sphere position="0 0.8 0.28" radius="0.09" color="#22D3EE" material="emissive: #22D3EE; emissiveIntensity: 0.8"></a-sphere>
+              <a-cone id="rocket-thruster-flame" position="0 -0.1 0" radius-bottom="0.2" radius-top="0.02" height="0.3" color="#F59E0B" material="emissive: #F59E0B; emissiveIntensity: 0; transparent: true; opacity: 0.8" rotation="180 0 0"></a-cone>
+            </a-entity>
+          `;
+        } else if (type === 'HOUSE') {
+          container.innerHTML = `
+            <!-- Smart Eco-Living Pod Creation -->
+            <a-entity id="final-creation-entity">
+              <a-box position="0 0.3 0" width="1.0" height="0.5" depth="0.8" color="#1E293B"></a-box>
+              <a-sphere id="house-glass-dome" position="0 0.55 0" radius="0.4" theta-length="90" color="#22D3EE" material="transparent: true; opacity: 0.4; emissive: #22D3EE; emissiveIntensity: 0.2"></a-sphere>
+              <a-box id="house-window-light" position="0 0.3 0.41" width="0.4" height="0.2" depth="0.02" color="#F59E0B" material="emissive: #F59E0B; emissiveIntensity: 0.2"></a-box>
+              <a-box position="-0.6 0.35 0" width="0.2" height="0.02" depth="0.6" color="#8B5CF6" rotation="0 0 15"></a-box>
+              <a-box position="0.6 0.35 0" width="0.2" height="0.02" depth="0.6" color="#8B5CF6" rotation="0 0 -15"></a-box>
+              <a-entity id="house-dish" position="0 0.9 0">
+                <a-cone radius-bottom="0.12" height="0.08" color="#22D3EE" rotation="180 0 0"></a-cone>
+              </a-entity>
+            </a-entity>
+          `;
+        }
+      }
+
+      /**
+       * Creation Specific Final Animation
+       */
+      activateCreationAnimation(container, type) {
+        let tick = 0;
+        const anim = () => {
+          tick += 0.05;
+
+          if (type === 'ROBOT') {
+            const armL = container.querySelector('#creation-bot-arm-l');
+            const armR = container.querySelector('#creation-bot-arm-r');
+            if (armL) armL.setAttribute('rotation', `${Math.sin(tick * 4) * 30} 0 0`);
+            if (armR) armR.setAttribute('rotation', `${-Math.sin(tick * 4) * 30} 0 0`);
+          } else if (type === 'ROCKET') {
+            const flame = container.querySelector('#rocket-thruster-flame');
+            const entity = container.querySelector('#final-creation-entity');
+            if (flame) flame.setAttribute('material', `emissiveIntensity: ${0.6 + Math.sin(tick * 8) * 0.3}`);
+            if (entity) {
+              const hoverY = Math.sin(tick * 3) * 0.15;
+              entity.setAttribute('position', `0 ${hoverY} 0`);
+            }
+          } else if (type === 'HOUSE') {
+            const windowLight = container.querySelector('#house-window-light');
+            const dish = container.querySelector('#house-dish');
+            if (windowLight) windowLight.setAttribute('material', `emissiveIntensity: ${0.5 + Math.sin(tick * 2) * 0.4}`);
+            if (dish) dish.setAttribute('rotation', `0 ${tick * 50} 0`);
+          }
+
+          requestAnimationFrame(anim);
+        };
+        anim();
+      }
+
+      /**
+       * Helper: Testing Scanner Beam Motion
+       */
+      animateScannerBeam() {
+        const beam = document.getElementById('testing-scanner-beam');
+        let start = performance.now();
+        const scan = (now) => {
+          let elapsed = (now - start) / 1000;
+          if (elapsed > 2.2) return;
+          let posY = 0.3 + (Math.sin(elapsed * 5) + 1) * 0.7; // sweep 0.3 to 1.7
+          beam.setAttribute('position', `0 ${posY} 0`);
+          requestAnimationFrame(scan);
+        };
+        requestAnimationFrame(scan);
+      }
+
+      /**
+       * Update HUD Status Bar
+       */
+      updateHUD(title, step, statusText, progressPercent) {
+        document.getElementById('hud-title').innerText = title;
+        document.getElementById('hud-step-badge').innerText = step;
+        document.getElementById('hud-status-text').innerText = statusText;
+        document.getElementById('hud-progress').style.width = `${progressPercent}%`;
+      }
+
+      /**
+       * Interpolated Smooth Movement Helper
+       */
+      moveEntityTo(entity, targetPos, targetRot, duration, callback) {
+        const startPos = Object.assign({}, entity.getAttribute('position'));
+        const startRot = Object.assign({}, entity.getAttribute('rotation') || { x: 0, y: 0, z: 0 });
+        const startTime = performance.now();
+
+        const update = (now) => {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          // Easing
+          const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+          entity.setAttribute('position', {
+            x: startPos.x + (targetPos.x - startPos.x) * ease,
+            y: startPos.y + (targetPos.y - startPos.y) * ease,
+            z: startPos.z + (targetPos.z - startPos.z) * ease
+          });
+
+          if (targetRot) {
+            entity.setAttribute('rotation', {
+              x: startRot.x + (targetRot.x - startRot.x) * ease,
+              y: startRot.y + (targetRot.y - startRot.y) * ease,
+              z: startRot.z + (targetRot.z - startRot.z) * ease
+            });
+          }
+
+          if (progress < 1) {
+            requestAnimationFrame(update);
+          } else if (callback) {
+            callback();
+          }
+        };
+        requestAnimationFrame(update);
+      }
+
+      moveEntityToAsync(entity, targetPos, targetRot, duration) {
+        return new Promise((resolve) => {
+          this.moveEntityTo(entity, targetPos, targetRot, duration, resolve);
+        });
+      }
+
+      delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+    }
+
+    // Initialize Application
+    const app = new CreataiApp();
+  </script>
+</body>
+</html>
